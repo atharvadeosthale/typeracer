@@ -5,7 +5,7 @@ import { rooms } from "../setupListeners";
 export class Game {
   gameStatus: "not-started" | "in-progress" | "finished";
   gameId: string;
-  players: { id: string; score: number }[];
+  players: { id: string; score: number; name: string }[];
   io: Server;
   gameHost: string;
   paragraph: string;
@@ -105,8 +105,8 @@ export class Game {
     });
   }
 
-  joinPlayer(id: string, socket: Socket) {
-    this.players.push({ id, score: 0 });
+  joinPlayer(id: string, name: string, socket: Socket) {
+    this.players.push({ id, name, score: 0 });
     this.io.to(this.gameId).emit("player-joined", id);
 
     this.setupListeners(socket);
