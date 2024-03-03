@@ -1,0 +1,114 @@
+import { Server, Socket } from "socket.io";
+import { generateParagraph } from "../utils/generateParagraph";
+import { rooms } from "../setupListeners";
+
+export class Game {
+  gameStatus: "not-started" | "in-progress" | "finished";
+  gameId: string;
+  players: { id: string; score: number }[];
+  io: Server;
+  gameHost: string;
+  paragraph: string;
+
+  constructor(id: string, io: Server, host: string) {
+    this.gameId = id;
+    this.players = [];
+    this.io = io;
+    this.gameHost = host;
+    this.gameStatus = "not-started";
+    this.paragraph = "";
+  }
+
+  setupListeners(socket: Socket) {
+    socket.on("start-game", () => {
+      if (this.gameStatus === "in-progress")
+        return socket.emit("error", "The game has already started");
+
+      if (this.gameHost !== socket.id) {
+        return socket.emit(
+          "error",
+          "You are not the host of this game. Only the host can start the game.",
+        );
+      }
+
+      this.gameStatus = "in-progress";
+
+      // Start the game logic
+      // Generate a random paragraph of 50 words long
+      const paragraph = generateParagraph();
+      this.paragraph = paragraph;
+      this.io.to(this.gameId).emit("game-started", paragraph);
+
+      // Set a timer for 60 seconds
+      setTimeout(() => {
+        this.gameStatus = "finished";
+        this.io.to(this.gameId).emit("game-finished");
+      }, 60000);
+    });
+
+    // Get player keystrokes and check if they match the paragraph
+    socket.on("player-typed", (typed: string) => {
+      if (this.gameStatus !== "in-progress")
+        return socket.emit("error", "The game has not started yet");
+
+      const splittedParagraph = this.paragraph.split(" ");
+      const splittedTyped = typed.split(" ");
+
+      let score = 0;
+
+      for (let i = 0; i < splittedTyped.length; i++) {
+        if (splittedTyped[i] === splittedParagraph[i]) {
+          score++;
+        } else {
+          break;
+        }
+      }
+
+      const player = this.players.find((player) => player.id === socket.id);
+
+      if (player) {
+        player.score = score;
+      }
+
+      this.io.to(this.gameId).emit("player-score", { id: socket.id, score });
+    });
+
+    socket.on("leave", () => {
+      if (socket.id === this.gameHost) {
+        this.players = this.players.filter((player) => player.id !== socket.id);
+
+        if (this.players.length !== 0) {
+          this.gameHost = this.players[0].id;
+        } else {
+          // Delete the game if the host leaves and there are no players
+          rooms.delete(this.gameId);
+        }
+      }
+
+      socket.leave(this.gameId);
+    });
+
+    socket.on("disconnect", () => {
+      if (socket.id === this.gameHost) {
+        this.players = this.players.filter((player) => player.id !== socket.id);
+
+        if (this.players.length !== 0) {
+          this.gameHost = this.players[0].id;
+        } else {
+          // Delete the game if the host leaves and there are no players
+          rooms.delete(this.gameId);
+        }
+      }
+
+      socket.leave(this.gameId);
+      this.players = this.players.filter((player) => player.id !== socket.id);
+    });
+  }
+
+  joinPlayer(id: string, socket: Socket) {
+    this.players.push({ id, score: 0 });
+    this.io.to(this.gameId).emit("player-joined", id);
+
+    this.setupListeners(socket);
+  }
+}
