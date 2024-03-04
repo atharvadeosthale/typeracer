@@ -79,6 +79,8 @@ export class Game {
 
         if (this.players.length !== 0) {
           this.gameHost = this.players[0].id;
+          this.io.to(this.gameId).emit("new-host", this.gameHost);
+          this.io.to(this.gameId).emit("player-left", socket.id);
         } else {
           // Delete the game if the host leaves and there are no players
           rooms.delete(this.gameId);
@@ -86,6 +88,8 @@ export class Game {
       }
 
       socket.leave(this.gameId);
+      this.players = this.players.filter((player) => player.id !== socket.id);
+      this.io.to(this.gameId).emit("player-left", socket.id);
     });
 
     socket.on("disconnect", () => {
