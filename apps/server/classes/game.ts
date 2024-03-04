@@ -27,9 +27,13 @@ export class Game {
       if (this.gameHost !== socket.id) {
         return socket.emit(
           "error",
-          "You are not the host of this game. Only the host can start the game.",
+          "You are not the host of this game. Only the host can start the game."
         );
       }
+
+      // Reset leaderboard
+      this.players.forEach((player) => (player.score = 0));
+      this.io.to(this.gameId).emit("players", this.players);
 
       this.gameStatus = "in-progress";
 
@@ -43,6 +47,7 @@ export class Game {
       setTimeout(() => {
         this.gameStatus = "finished";
         this.io.to(this.gameId).emit("game-finished");
+        this.io.to(this.gameId).emit("players", this.players);
       }, 60000);
     });
 
@@ -111,7 +116,14 @@ export class Game {
 
   joinPlayer(id: string, name: string, socket: Socket) {
     this.players.push({ id, name, score: 0 });
-    this.io.to(this.gameId).emit("player-joined", id);
+    this.io.to(this.gameId).emit("player-joined", {
+      id,
+      name,
+      score: 0,
+    });
+
+    socket.emit("players", this.players);
+    socket.emit("new-host", this.gameHost);
 
     this.setupListeners(socket);
   }
