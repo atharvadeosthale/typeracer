@@ -115,6 +115,12 @@ export class Game {
   }
 
   joinPlayer(id: string, name: string, socket: Socket) {
+    if (this.gameStatus === "in-progress")
+      return socket.emit(
+        "error",
+        "Game has already started, please wait for it to end before joining!"
+      );
+
     this.players.push({ id, name, score: 0 });
     this.io.to(this.gameId).emit("player-joined", {
       id,
