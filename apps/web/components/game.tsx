@@ -120,11 +120,13 @@ export default function GamePlayer({ gameId, name }: GameProps) {
   };
 
   return (
-    <div className="w-screen h-screen p-10 grid grid-cols-3 gap-20">
+    <div className="w-screen p-10 grid grid-cols-1 lg:grid-cols-3 gap-20">
       {/* Leaderboard */}
-      <div>
-        <h2 className="text-2xl font-medium mb-10">Leaderboard</h2>
-        <div className="flex flex-col gap-5">
+      <div className="w-full order-last lg:order-first">
+        <h2 className="text-2xl font-medium mb-10 mt-10 lg:mt-0">
+          Leaderboard
+        </h2>
+        <div className="flex flex-col gap-5 w-full">
           {/* sort players based on score and map */}
           {players
             .sort((a, b) => b.score - a.score)
@@ -139,7 +141,7 @@ export default function GamePlayer({ gameId, name }: GameProps) {
       </div>
 
       {/* Game */}
-      <div className="col-span-2 h-full">
+      <div className="lg:col-span-2 h-full">
         {gameStatus === "not-started" && (
           <div className="flex flex-col items-center justify-center p-10">
             <h1 className="text-2xl font-bold">
@@ -161,14 +163,12 @@ export default function GamePlayer({ gameId, name }: GameProps) {
             </h1>
 
             <div className="relative h-full">
-              <p className="text-5xl absolute top-0 left-0 right-0 bottom-0">
-                {paragraph}
-              </p>
+              <p className="text-2xl lg:text-5xl p-5  ">{paragraph}</p>
 
               <Textarea
                 value={inputParagraph}
                 onChange={(e) => setInputParagraph(e.target.value)}
-                className="text-5xl outline-none p-0 absolute top-0 left-0 right-0 bottom-0 z-10 opacity-50"
+                className="text-2xl lg:text-5xl outline-none p-5 absolute top-0 left-0 right-0 bottom-0 z-10 opacity-75"
                 placeholder=""
                 disabled={gameStatus !== "in-progress" || !ioInstance}
               />
@@ -178,7 +178,7 @@ export default function GamePlayer({ gameId, name }: GameProps) {
 
         {gameStatus === "finished" && (
           <div className="flex flex-col items-center justify-center p-10">
-            <h1 className="text-2xl font-bold">
+            <h1 className="text-2xl font-bold text-center">
               Game finished!
               {ioInstance?.id === host && " Restart the game fresh!"}
             </h1>
