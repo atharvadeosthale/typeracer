@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { FormEvent } from "react";
 import { toast } from "sonner";
+import { v4 as uuidv4 } from "uuid";
 
 export default function Home() {
   const router = useRouter();
@@ -19,6 +20,11 @@ export default function Home() {
 
     if (!inviteCode) return toast.error("Invite code is required");
 
+    router.push(`/game/${inviteCode}`);
+  }
+
+  function createGame() {
+    const inviteCode = uuidv4();
     router.push(`/game/${inviteCode}`);
   }
 
@@ -42,7 +48,9 @@ export default function Home() {
           </div>
 
           <div>
-            <Button className="mt-5 w-full">Create Game</Button>
+            <Button className="mt-5 w-full" onClick={createGame}>
+              Create Game
+            </Button>
           </div>
         </div>
 
