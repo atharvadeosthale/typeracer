@@ -20,26 +20,29 @@ export class Game {
   }
 
   setupListeners(socket: Socket) {
-    socket.on("start-game", () => {
+    socket.on("start-game", async () => {
       if (this.gameStatus === "in-progress")
         return socket.emit("error", "The game has already started");
 
       if (this.gameHost !== socket.id) {
         return socket.emit(
           "error",
-          "You are not the host of this game. Only the host can start the game."
+          "You are not the host of this game. Only the host can start the game.",
         );
       }
 
       // Reset leaderboard
-      this.players.forEach((player) => (player.score = 0));
+      for (const player of this.players) {
+        player.score = 0;
+      }
+
       this.io.to(this.gameId).emit("players", this.players);
 
       this.gameStatus = "in-progress";
 
       // Start the game logic
       // Generate a random paragraph of 50 words long
-      const paragraph = generateParagraph();
+      const paragraph = await generateParagraph();
       this.paragraph = paragraph;
       this.io.to(this.gameId).emit("game-started", paragraph);
 
@@ -118,7 +121,7 @@ export class Game {
     if (this.gameStatus === "in-progress")
       return socket.emit(
         "error",
-        "Game has already started, please wait for it to end before joining!"
+        "Game has already started, please wait for it to end before joining!",
       );
 
     this.players.push({ id, name, score: 0 });

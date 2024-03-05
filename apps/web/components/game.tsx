@@ -35,7 +35,7 @@ export default function GamePlayer({ gameId, name }: GameProps) {
 
   // useEffect for detecting changes in input paragraph
   useEffect(() => {
-    if (!ioInstance) return;
+    if (!ioInstance || gameStatus !== "in-progress") return;
 
     ioInstance.emit("player-typed", inputParagraph);
   }, [inputParagraph]);
@@ -70,7 +70,7 @@ export default function GamePlayer({ gameId, name }: GameProps) {
             };
           }
           return player;
-        })
+        }),
       );
     });
 
