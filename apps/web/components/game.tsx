@@ -17,7 +17,9 @@ export default function GamePlayer({ gameId, name }: GameProps) {
   const [inputParagraph, setInputParagraph] = useState<string>("");
 
   useEffect(() => {
-    const socket = io("ws://localhost:8080", { transports: ["websocket"] });
+    const socket = io(process.env.NEXT_PUBLIC_WEBSOCKET_URL as string, {
+      transports: ["websocket"],
+    });
     setIoInstance(socket);
 
     socket.emit("join-game", gameId, name);
