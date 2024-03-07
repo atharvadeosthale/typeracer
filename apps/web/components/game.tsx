@@ -165,7 +165,7 @@ export default function GamePlayer({ gameId, name }: GameProps) {
             </h1>
 
             <div className="relative h-full">
-              <p className="text-2xl lg:text-5xl p-5  ">{paragraph}</p>
+              <p className="text-2xl lg:text-5xl p-5">{paragraph}</p>
 
               <Textarea
                 value={inputParagraph}

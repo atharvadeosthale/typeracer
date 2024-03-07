@@ -9,7 +9,7 @@ export function setupListeners(io: Server) {
 
     socket.on("join-game", (roomId: string, name: string) => {
       if (!roomId) {
-        socket.emit("error", "Invalid room ID");
+        return socket.emit("error", "Invalid room ID");
       }
       socket.join(roomId);
       console.log("joined a room");
